@@ -102,6 +102,62 @@ class ClusterModelClusterUsers extends ListModel
 			$query->where('cu.cluster_id = ' . (int) $cluster);
 		}
 
+		// Filter by user
+		$cluster_user = $this->getState('filter.user_id');
+
+		if (is_numeric($cluster_user))
+		{
+			$query->where('cu.user_id = ' . (int) $cluster_user);
+		}
+
+		// Filter by client_id
+		$clusterClientId = $this->getState('filter.client_id');
+
+		if (is_numeric($clusterClientId))
+		{
+			$query->where('cl.client_id = ' . (int) $clusterClientId);
+		}
+		elseif (is_array($clusterClientId))
+		{
+			$query->where("cl.client_id IN ('" . implode("','", $clusterClientId) . "')");
+		}
+
+		// Filter by state
+		$published = $this->getState('filter.published');
+
+		if (is_numeric($published))
+		{
+			$query->where('cl.state = ' . (int) $published);
+		}
+		elseif ($published === '')
+		{
+			$query->where('(cl.state = 0 OR cl.state = 1)');
+		}
+
+		// Filter by blocked users
+		$blockUser = $this->getState('filter.block');
+
+		if (is_numeric($blockUser))
+		{
+			$query->where($db->quoteName('users.block') . ' = ' . (int) $blockUser);
+		}
+
+		// Group by cluster
+		$clientID = $this->getState('list.group_by_client_id');
+
+		if (is_numeric($clientID))
+		{
+			$query->group('cl.client_id');
+		}
+
+		// Group by user
+		$userID = $this->getState('list.group_by_user_id');
+
+		if (is_numeric($userID))
+		{
+			$query->group('users.id');
+		}
+
 		// Add the list ordering clause.
 		$orderCol  = $this->state->get('list.ordering');
 		$orderDirn = $this->state->get('list.direction');
