@@ -121,17 +121,17 @@ class ClusterModelClusterUser extends AdminModel
 	 *
 	 * @since   1.0.0
 	 */
-	public function getUsersClusters($userId)
+	public function getUsersClusters($userId = null)
 	{
-		$user = Factory::getUser($userId);
-		$superUser = $user->authorise('core.admin');
+		$user = empty($userId) ? Factory::getUser() : Factory::getUser($userId);
 
 		$clusters = array();
 
 		// Load cluster library file
 		JLoader::import("/components/com_cluster/includes/cluster", JPATH_ADMINISTRATOR);
 
-		if (!$superUser && !$user->authorise('core.manageall.cluster', 'com_cluster'))
+		// If user is not allowed to view all the clusters then return the clusters in which user is a part else return al cluster
+		if (!$user->authorise('core.manageall.cluster', 'com_cluster'))
 		{
 			$clusterUsersModel = ClusterFactory::model('ClusterUsers', array('ignore_request' => true));
 			$clusterUsersModel->setState('list.group_by_client_id', 1);
@@ -141,9 +141,9 @@ class ClusterModelClusterUser extends AdminModel
 			// Get all assigned cluster entries
 			$clusters = $clusterUsersModel->getItems();
 		}
-
-		if ($superUser)
+		else
 		{
+			$clusterModel = $this->setState('filter.state', 1);
 			$clusterModel = ClusterFactory::model('Clusters', array('ignore_request' => true));
 
 			// Get all cluster entries
@@ -162,7 +162,7 @@ class ClusterModelClusterUser extends AdminModel
 
 		if (!empty($clusters))
 		{
-			if ($subUserExist && (!$superUser && !$user->authorise('core.manageall.cluster', 'com_cluster')))
+			if ($subUserExist && (!$user->authorise('core.manageall.cluster', 'com_cluster')))
 			{
 				foreach ($clusters as $cluster)
 				{

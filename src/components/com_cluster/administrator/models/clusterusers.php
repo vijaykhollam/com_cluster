@@ -75,11 +75,11 @@ class ClusterModelClusterUsers extends ListModel
 			}
 		}
 
-		$created_by = $this->getState('filter.created_by');
+		$createdBy = $this->getState('filter.created_by');
 
-		if (!empty($created_by))
+		if (!empty($createdBy))
 		{
-			$query->where($db->quoteName('cu.created_by') . ' = ' . (int) $created_by);
+			$query->where($db->quoteName('cu.created_by') . ' = ' . (int) $createdBy);
 		}
 
 		// Filter by state
@@ -103,11 +103,11 @@ class ClusterModelClusterUsers extends ListModel
 		}
 
 		// Filter by user
-		$cluster_user = $this->getState('filter.user_id');
+		$clusterUser = $this->getState('filter.user_id');
 
-		if (is_numeric($cluster_user))
+		if (is_numeric($clusterUser))
 		{
-			$query->where('cu.user_id = ' . (int) $cluster_user);
+			$query->where('cu.user_id = ' . (int) $clusterUser);
 		}
 
 		// Filter by client_id
