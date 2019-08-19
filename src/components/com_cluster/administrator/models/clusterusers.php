@@ -75,11 +75,11 @@ class ClusterModelClusterUsers extends ListModel
 			}
 		}
 
-		$created_by = $this->getState('filter.created_by');
+		$createdBy = $this->getState('filter.created_by');
 
-		if (!empty($created_by))
+		if (!empty($createdBy))
 		{
-			$query->where($db->quoteName('cu.created_by') . ' = ' . (int) $created_by);
+			$query->where($db->quoteName('cu.created_by') . ' = ' . (int) $createdBy);
 		}
 
 		// Filter by state
@@ -100,6 +100,62 @@ class ClusterModelClusterUsers extends ListModel
 		if (is_numeric($cluster))
 		{
 			$query->where('cu.cluster_id = ' . (int) $cluster);
+		}
+
+		// Filter by user
+		$clusterUser = $this->getState('filter.user_id');
+
+		if (is_numeric($clusterUser))
+		{
+			$query->where('cu.user_id = ' . (int) $clusterUser);
+		}
+
+		// Filter by client_id
+		$clusterClientId = $this->getState('filter.client_id');
+
+		if (is_numeric($clusterClientId))
+		{
+			$query->where('cl.client_id = ' . (int) $clusterClientId);
+		}
+		elseif (is_array($clusterClientId))
+		{
+			$query->where("cl.client_id IN ('" . implode("','", $clusterClientId) . "')");
+		}
+
+		// Filter by state
+		$published = $this->getState('filter.published');
+
+		if (is_numeric($published))
+		{
+			$query->where('cl.state = ' . (int) $published);
+		}
+		elseif ($published === '')
+		{
+			$query->where('(cl.state = 0 OR cl.state = 1)');
+		}
+
+		// Filter by blocked users
+		$blockUser = $this->getState('filter.block');
+
+		if (is_numeric($blockUser))
+		{
+			$query->where($db->quoteName('users.block') . ' = ' . (int) $blockUser);
+		}
+
+		// Group by cluster
+		$clientID = $this->getState('list.group_by_client_id');
+
+		if (is_numeric($clientID))
+		{
+			$query->group('cl.client_id');
+		}
+
+		// Group by user
+		$userID = $this->getState('list.group_by_user_id');
+
+		if (is_numeric($userID))
+		{
+			$query->group('users.id');
 		}
 
 		// Add the list ordering clause.
