@@ -143,10 +143,10 @@ class ClusterModelClusterUser extends AdminModel
 		}
 		else
 		{
-			$clusterModel = $this->setState('filter.state', 1);
 			$clusterModel = ClusterFactory::model('Clusters', array('ignore_request' => true));
 
 			// Get all cluster entries
+			$clusterModel->setState('filter.state', 1);
 			$clusters = $clusterModel->getItems();
 		}
 
