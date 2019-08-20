@@ -10,7 +10,9 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
+use Joomla\CMS\Factory;
 use Joomla\CMS\MVC\Model\ListModel;
+use Joomla\CMS\Component\ComponentHelper;
 
 /**
  * Methods supporting a list of records.
@@ -34,7 +36,7 @@ class ClusterModelClusterUsers extends ListModel
 			$config['filter_fields'] = array(
 				'id', 'cu.id',
 				'cluster_id', 'cu.cluster_id',
-				'state', 'cu.state',
+				'state', 'cu.state','cl.name','cl.client_id'
 			);
 		}
 
@@ -54,32 +56,38 @@ class ClusterModelClusterUsers extends ListModel
 		$db    = $this->getDbo();
 		$query = $db->getQuery(true);
 
-		$query->select(array('cu.*','cl.name', 'users.name as uname'));
+		$query->select(array('cu.*','cl.name', 'users.name as uname', 'users.username','cl.name as title', 'cl.client_id as client_id'));
 		$query->from($db->quoteName('#__tj_cluster_nodes', 'cu'));
-		$query->join('INNER', $db->quoteName('#__users', 'users') . ' ON (' . $db->quoteName('cu.user_id') . ' = ' . $db->quoteName('users.id') . ')');
+		$query->join('INNER', $db->quoteName('#__users', 'users') . ' ON (' . $db->quoteName('cu.user_id') . ' = '
+		. $db->quoteName('users.id') . ')');
 		$query->join('INNER', $db->quoteName('#__tj_clusters', 'cl') . ' ON (' . $db->quoteName('cl.id') . ' = ' . $db->quoteName('cu.cluster_id') . ')');
+
+		// Get com_subusers component status
+		$subUserExist = ComponentHelper::getComponent('com_subusers', true)->enabled;
+
+		if ($subUserExist)
+		{
+			$roleId = $this->getState('filter.role_id');
+
+			if (is_numeric($roleId))
+			{
+				$query->join('INNER', $db->qn('#__tjsu_users', 'su') .
+			' ON (' . $db->qn('users.id') . ' = ' . $db->qn('su.user_id') . ' AND ' . $db->qn('su.client') . ' = "com_multiagency" )');
+				$query->join('INNER', $db->qn('#__tjsu_roles', 'r') .
+			' ON (' . $db->qn('r.id') . ' = ' . $db->qn('su.role_id') . ' AND ' . $db->qn('r.state') . ' = 1 )');
+
+				$query->where($db->quoteName('su.role_id') . ' != ' . (int) $roleId);
+			}
+		}
 
 		// Filter by search in title.
 		$search = $this->getState('filter.search');
 
-		if (!empty($search))
-		{
-			if (stripos($search, 'id:') === 0)
-			{
-				$query->where('cu.id = ' . (int) substr($search, 3));
-			}
-			else
-			{
-				$search = $db->quote('%' . str_replace(' ', '%', $db->escape(trim($search), true) . '%'));
-				$query->where('(users.name LIKE' . $search . ' OR cl.name LIKE ' . $search . ')');
-			}
-		}
+		$created_by = $this->getState('filter.created_by');
 
-		$createdBy = $this->getState('filter.created_by');
-
-		if (!empty($createdBy))
+		if (!empty($created_by))
 		{
-			$query->where($db->quoteName('cu.created_by') . ' = ' . (int) $createdBy);
+			$query->where($db->quoteName('cu.created_by') . ' = ' . (int) $created_by);
 		}
 
 		// Filter by state
@@ -122,7 +130,7 @@ class ClusterModelClusterUsers extends ListModel
 			$query->where("cl.client_id IN ('" . implode("','", $clusterClientId) . "')");
 		}
 
-		// Filter by state
+		// Filter by cluster table state
 		$published = $this->getState('filter.published');
 
 		if (is_numeric($published))
@@ -134,7 +142,7 @@ class ClusterModelClusterUsers extends ListModel
 			$query->where('(cl.state = 0 OR cl.state = 1)');
 		}
 
-		// Filter by blocked users
+		// Filter users by block
 		$blockUser = $this->getState('filter.block');
 
 		if (is_numeric($blockUser))
