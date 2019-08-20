@@ -83,6 +83,19 @@ class ClusterModelClusterUsers extends ListModel
 		// Filter by search in title.
 		$search = $this->getState('filter.search');
 
+		if (!empty($search))
+		{
+			if (stripos($search, 'id:') === 0)
+			{
+				$query->where('cu.id = ' . (int) substr($search, 3));
+			}
+			else
+			{
+				$search = $db->quote('%' . str_replace(' ', '%', $db->escape(trim($search), true) . '%'));
+				$query->where('(users.name LIKE' . $search . ' OR cl.name LIKE ' . $search . ')');
+			}
+		}
+
 		$created_by = $this->getState('filter.created_by');
 
 		if (!empty($created_by))
