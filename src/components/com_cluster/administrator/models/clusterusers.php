@@ -96,11 +96,11 @@ class ClusterModelClusterUsers extends ListModel
 			}
 		}
 
-		$created_by = $this->getState('filter.created_by');
+		$createdBy = $this->getState('filter.created_by');
 
-		if (!empty($created_by))
+		if (!empty($createdBy))
 		{
-			$query->where($db->quoteName('cu.created_by') . ' = ' . (int) $created_by);
+			$query->where($db->quoteName('cu.created_by') . ' = ' . (int) $createdBy);
 		}
 
 		// Filter by state
