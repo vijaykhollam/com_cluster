@@ -12,7 +12,7 @@ defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\HTML\HTMLHelper;
-use Joomla\CMS\Component\ComponentHelper;
+use Joomla\CMS\Response\JsonResponse;
 use Joomla\CMS\MVC\Controller\BaseController;
 use Joomla\CMS\Session\Session;
 
@@ -34,14 +34,20 @@ class ClusterControllerClusterUsers extends BaseController
 	 */
 	public function getUsersByClientId()
 	{
-		// Check for request forgeries.
-		Session::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+		$app = Factory::getApplication();
 
-		$clusterIds = Factory::getApplication()->input->getInt('cluster_id', 0);
+		// Check for request forgeries.
+		if (!Session::checkToken())
+		{
+			echo new JsonResponse(null, Text::_('JINVALID_TOKEN'), true);
+			$app->close();
+		}
+
+		$clusterIds = $app->input->getInt('cluster_id', 0);
 		$userOptions = $allUsers = array();
 
 		// Initialize array to store dropdown options
-		$userOptions[] = HTMLHelper::_('select.option', "", Text::_('COM_TJFIELDS_OWNERSHIP_USER'));
+		$userOptions[] = HTMLHelper::_('select.option', "", Text::_('COM_CLUSTER_OWNERSHIP_USER'));
 
 		// Check cluster selected or not
 		if ($clusterIds)
@@ -61,7 +67,7 @@ class ClusterControllerClusterUsers extends BaseController
 			}
 		}
 
-		echo new JResponseJson($userOptions);
-		jexit();
+		echo new JsonResponse($userOptions);
+		$app->close();
 	}
 }
