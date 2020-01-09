@@ -56,7 +56,9 @@ class ClusterModelClusterUsers extends ListModel
 		$db    = $this->getDbo();
 		$query = $db->getQuery(true);
 
-		$query->select(array('cu.*','cl.name', 'users.name as uname', 'users.username','cl.name as title', 'cl.client_id as client_id'));
+		$query->select(
+			array('cu.*','cl.name', 'users.name as uname', 'users.email as uemail', 'users.username','cl.name as title', 'cl.client_id as client_id')
+		);
 		$query->from($db->quoteName('#__tj_cluster_nodes', 'cu'));
 		$query->join('INNER', $db->quoteName('#__users', 'users') . ' ON (' . $db->quoteName('cu.user_id') . ' = '
 		. $db->quoteName('users.id') . ')');
@@ -162,8 +164,8 @@ class ClusterModelClusterUsers extends ListModel
 		}
 
 		// Add the list ordering clause.
-		$orderCol  = $this->state->get('list.ordering');
-		$orderDirn = $this->state->get('list.direction');
+		$orderCol  = $this->state->get('list.ordering', 'users.name');
+		$orderDirn = $this->state->get('list.direction', 'asc');
 
 		if ($orderCol && $orderDirn)
 		{
