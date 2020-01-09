@@ -245,8 +245,12 @@ class ClusterCluster extends CMSObject
 	{
 		$userId = Factory::getuser($userId)->id;
 
-		$ClusterModel = ClusterFactory::model('ClusterUsers', array('ignore_request' => true));
+		if (empty($userId))
+		{
+			return false;
+		}
 
+		$ClusterModel = ClusterFactory::model('ClusterUsers', array('ignore_request' => true));
 		$ClusterModel->setState('filter.published', 1);
 		$ClusterModel->setState('filter.cluster_id', (int) $this->id);
 		$ClusterModel->setState('filter.user_id', $userId);
