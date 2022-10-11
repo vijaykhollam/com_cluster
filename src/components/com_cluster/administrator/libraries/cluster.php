@@ -11,6 +11,7 @@ defined('_JEXEC') or die('Unauthorized Access');
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Object\CMSObject;
+use Joomla\CMS\Language\Text;
 
 /**
  * Cluster class.  Handles all application interaction with a Cluster
@@ -192,7 +193,7 @@ class ClusterCluster extends CMSObject
 	{
 		if (empty($array))
 		{
-			$this->setError(JText::_('COM_CLUSTER_EMPTY_DATA'));
+			$this->setError(Text::_('COM_CLUSTER_EMPTY_DATA'));
 
 			return false;
 		}
@@ -200,7 +201,7 @@ class ClusterCluster extends CMSObject
 		// Bind the array
 		if (!$this->setProperties($array))
 		{
-			$this->setError(\JText::_('COM_CLUSTER_BINDING_ERROR'));
+			$this->setError(Text::_('COM_CLUSTER_BINDING_ERROR'));
 
 			return false;
 		}
